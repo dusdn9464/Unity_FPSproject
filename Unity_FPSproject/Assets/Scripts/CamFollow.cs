@@ -52,27 +52,29 @@ public class CamFollow : MonoBehaviour
         {
             //타겟방향 구하기 (벡터의 뺄셈)
             //방향 = 타겟 - 자기자신
-            Vector3 dir = target.position - transform.position;
-            dir.Normalize();
-            transform.Translate(dir * followSpeed * Time.deltaTime);
-
-            //문제점 : 타겟에 도착하면 덜덜덜 거림
-            if (Vector3.Distance(transform.position, target.position) < 1.0f)
-            {
-                transform.position = target.position;
-            }
+            transform.position = target.position;
+            //Vector3 dir = target.position - transform.position;
+            //dir.Normalize();
+            //transform.Translate(dir * followSpeed * Time.deltaTime);
+            //
+            ////문제점 : 타겟에 도착하면 덜덜덜 거림
+            //if (Vector3.Distance(transform.position, target.position) < 1.0f)
+            //{
+            //    transform.position = target.position;
+            //}
         }
         else
         {
-            Vector3 dir2 = point3.position - transform.position;
-            dir2.Normalize();
-            transform.Translate(dir2 * followSpeed * Time.deltaTime);
-
-            //문제점 : 타겟에 도착하면 덜덜덜 거림
-            if (Vector3.Distance(transform.position, point3.position) < 1.0f)
-            {
-                transform.position = point3.position;
-            }
+            transform.position = point3.position;
+            //Vector3 dir2 = point3.position - transform.position;
+            //dir2.Normalize();
+            //transform.Translate(dir2 * followSpeed * Time.deltaTime);
+            //
+            ////문제점 : 타겟에 도착하면 덜덜덜 거림
+            //if (Vector3.Distance(transform.position, point3.position) < 1.0f)
+            //{
+            //    transform.position = point3.position;
+            //}
         }
 
     }
