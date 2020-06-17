@@ -10,6 +10,12 @@ public class PlayerFire : MonoBehaviour
     public GameObject firePoint;        //폭탄 발사위치
     public float throwPower = 20.0f;    //던질파워
 
+    EnemyFSM em;
+
+    private void Start()
+    {
+        em = GameObject.Find("Enemy").GetComponent<EnemyFSM>();
+    }
 
     // Update is called once per frame
     void Update()
@@ -48,7 +54,7 @@ public class PlayerFire : MonoBehaviour
                 //파편이 부딪힌 지점이 향하는 방향으로 튀게 해줘야 한다
                 //bulletImpact.transform.forward = hitInfo.normal;
 
-
+                em.EnemeyDamege();
             }
 
             //레이어 마스크 사용 충돌처리(최적화)
