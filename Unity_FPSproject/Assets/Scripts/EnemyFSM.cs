@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 //몬스터 유한상태머신
 public class EnemyFSM : MonoBehaviour
@@ -15,7 +16,7 @@ public class EnemyFSM : MonoBehaviour
     EnemyState state;   //몬스터 상태변수
     EnemyState saveState;   //몬스터 상태변수
 
-
+    NavMeshAgent navi;
 
     //유용한 기능
     #region "Idle 상태에 필요한 변수들"
@@ -33,7 +34,7 @@ public class EnemyFSM : MonoBehaviour
     #endregion
 
     #region "Return 상태에 필요한 변수들"
-    public GameObject spawnPoint;        //에너미 스폰 위치
+    Transform spawnPoint;        //에너미 스폰 위치
     #endregion
 
     #region "Damaged 상태에 필요한 변수들"
@@ -45,12 +46,24 @@ public class EnemyFSM : MonoBehaviour
     //float enemyHp = 10.0f;
     #endregion
 
+    Transform player;
+    Animator anim;
+    Quaternion startRotation;   //몬스터 시작위치
+
+    
+    
+    
     // Start is called before the first frame update
     void Start()
     {
         //몬스터 상태 초기화
         state = EnemyState.Idle;
-        
+        anim = GetComponentInChildren<Animator>();
+        startRotation = Quaternion.identity;
+        player = GameObject.Find("Player").transform;
+        spawnPoint = GameObject.Find("SpawnPoint").transform;
+        //Quaternion.identity => 0으로 초기화
+        navi = GetComponent<NavMeshAgent>();
     }
 
     // Update is called once per frame
@@ -94,6 +107,9 @@ public class EnemyFSM : MonoBehaviour
         if (distance <= traceDist)
         {
             state = EnemyState.Move;
+
+            //애니메이션
+            anim.SetTrigger("Move");
         }
         //- 상태전환 출력
         Debug.Log("상태 : Idle");
@@ -102,10 +118,12 @@ public class EnemyFSM : MonoBehaviour
     private void Move()
     {
         //1. 플레이어를 향해 이동 후 공격범위 안에 들어오면 공격상태로 변경
-        transform.LookAt(GameObject.Find("Player").transform);
-        Vector3 dir = Vector3.forward;
+        //transform.LookAt(GameObject.Find("Player").transform);
+        //Vector3 dir = Vector3.forward;
 
-        transform.Translate(dir * enemySpeed * Time.deltaTime);
+        //transform.Translate(dir * enemySpeed * Time.deltaTime);
+
+        navi.SetDestination(player.position);
 
         float distance = Vector3.Distance(GameObject.Find("Player").transform.position, transform.position);
         float returnDist = Vector3.Distance(spawnPoint.transform.position, transform.position);
@@ -113,10 +131,12 @@ public class EnemyFSM : MonoBehaviour
         if(distance <= attackDist)
         {
             state = EnemyState.Attack;
+            anim.SetTrigger("Attack");
         }
         if( returnDist >= 30.0f )
         {
             state = EnemyState.Return;
+            anim.SetTrigger("Return");
         }
         //2. 플레이어를 추격하더라도 처음위치에서 일정범위를 넘어가면 리턴상태로 돌아오기
         //- 플레이어 처럼 캐릭터컨트롤러를 이용하기
@@ -143,6 +163,7 @@ public class EnemyFSM : MonoBehaviour
         if(distance > attackDist)
         {
             state = EnemyState.Move;
+            anim.SetTrigger("Move");
         }
         //- 플레이어처럼 캐릭터컨트롤러 이용하기
         //- 공격범위 2미터
@@ -154,10 +175,12 @@ public class EnemyFSM : MonoBehaviour
     private void Return()
     {
         //1. 몬스터가 플레이어를 추격하더라도 처음 위치에서 일정범위를 벗어나면 다시 돌아옴
-        transform.LookAt(spawnPoint.transform);
-        Vector3 dir = Vector3.forward;
+        //transform.LookAt(spawnPoint.transform);
+        //Vector3 dir = Vector3.forward;
 
-        transform.Translate(dir * enemySpeed * Time.deltaTime);
+        //transform.Translate(dir * enemySpeed * Time.deltaTime);
+
+        navi.SetDestination(spawnPoint.position);
 
         float idleDist = Vector3.Distance(spawnPoint.transform.position, transform.position);
         float distance = Vector3.Distance(GameObject.Find("Player").transform.position, transform.position);
@@ -165,10 +188,12 @@ public class EnemyFSM : MonoBehaviour
         if(idleDist <0.5f)
         {
             state = EnemyState.Idle;
+            anim.SetTrigger("Idle");
         }
         if(distance < traceDist)
         {
             state = EnemyState.Move;
+            anim.SetTrigger("Move");
         }
         //- 처음위치에서 일정범위 30미터
         //- 상태변경
@@ -211,7 +236,7 @@ public class EnemyFSM : MonoBehaviour
 
     IEnumerator EnemyDie()
     {
-        Destroy(gameObject);
+        //Destroy(gameObject);
         yield return new WaitForSeconds(0.5f);
     }
 
@@ -222,11 +247,13 @@ public class EnemyFSM : MonoBehaviour
         {
             saveState = state;
             state = EnemyState.Damaged;
+            anim.SetTrigger("Damaged");
             print("State : " + state.ToString());
         }
         else if(currentHp <= 0)
         {
             state = EnemyState.Die;
+            anim.SetTrigger("Die");
             print("State : " + state.ToString());
         }
     }
